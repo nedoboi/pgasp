@@ -14,6 +14,7 @@
  * 2014-12-30 Started
  * 2015-01-03 Added classic style print tag <%= %> along with new style <= =>
  * 2015-01-04 Added checks for consecutive tags
+ * 2015-01-09 Added comments section in the beginning of .pgasp
  *
  * TODO: PHP wrapper generation
  * TODO: different variables declaration section (for parsing GET/POST) when generated for use with mod_pgasp
@@ -59,6 +60,9 @@ int main(int argc, char * argv[])
 
       line_trimmed = line_input;
       while (line_trimmed[0] == ' ' || line_trimmed[0] == '\t') { line_trimmed++; }
+
+      /* comments section in the beginning of .pgasp file, only works until first non-comment line */
+      if (line_trimmed[0] == '#' && is_first_line) line_trimmed[0] = 0;
 
       if (line_trimmed[0] == 0) continue;
 
