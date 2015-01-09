@@ -1,0 +1,62 @@
+#
+# Simple PGASP example - list all records from table "people"
+# Author: "Alex Nedoboi" <my sever-letter surname at gmail>
+#
+# See pgasp.org for documentation
+# See github.com/nedoboi for PGASP Compiler, mod_pgasp, and more examples
+#
+# Requires: create table people as (id integer, first_name vachar, last_name varchar)
+#
+# 2014-12-30 Started
+# 2015-01-02 Added a little bit of styling
+# 2015-01-09 Added (this very) description as .pgasp format now allows for comments
+#
+# TODO: Add another section using <div>'s along with the existing section that uses old-school <table>
+# TODO: Move CSS to a .css file, add CSS for <div>'s
+# TODO: When mod_pgasp passes GET/POST, add parameter for filtering by id and/or name
+# TODO: When mod_pgasp passes GET/POST, extend this example with some CRUD, or leave as is and write new example
+#
+
+browse_people
+<!
+
+   r record;
+
+!><html>
+<head>
+<title>PGASP Browse People</title>
+<style>
+table { background-color: #3366ff; border: 0px; border-spacing: 0px 2px; }
+th { background-color: #dfefff; }
+td { background-color: white; }
+th, td { padding: 10px; }
+</style>
+</head>
+<body>
+
+<table>
+<tr>
+   <th>ID</th>
+   <th>First Name</th>
+   <th>Last Name</th>
+</tr>
+<%
+
+   for r in (select * from people order by first_name, last_name, id)
+   loop
+
+%>
+<tr>
+   <td><= r.id         =></td>
+   <td><= r.first_name =></td>
+   <td><= r.last_name  =></td>
+</tr>
+<%
+
+   end loop;
+
+%>
+</table>
+
+</body>
+</html>
