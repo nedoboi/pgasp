@@ -135,11 +135,12 @@ static int pgasp_handler (request_rec * r)
       return OK; /* pretending we have served the file, may return HTTP_FORDIDDEN in the future */
    }
 
-   ap_set_content_type(r, "text/html");
+//   ap_set_content_type(r, "text/html");
+   ap_set_content_type(r, "application/json");
 
    /* now connecting to Postgres, getting function output, and printing it */
 
-   pgc = PQconnectdb (connection_string);
+   pgc = PQconnectdb (config.connection_string);
 
    if (PQstatus(pgc) != CONNECTION_OK)
    {

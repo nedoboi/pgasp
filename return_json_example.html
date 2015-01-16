@@ -1,0 +1,64 @@
+<html>
+<head>
+<title>PGASP JSON example</title>
+<style>
+table { background-color: #3366ff; border: 0px; border-spacing: 0px 2px; }
+th { background-color: #dfefff; }
+td { background-color: white; }
+th, td { padding: 10px; }
+</style>
+</head>
+<body>
+
+<p>Click <a href="#" onclick="populate_table(); return false;">here</a> to populate the table</p>
+
+<table>
+<thead>
+<tr>
+    <th>ID</th>
+    <th>First name</th>
+    <th>Last name</th>
+</tr>
+</thead>
+<tbody id="tbody1"></tbody>
+</table>
+
+<script>
+
+var xmlhttp = new XMLHttpRequest();
+
+xmlhttp.onreadystatechange = function()
+{
+   if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+   {
+      pgasp_json_function (xmlhttp.responseText);
+   }
+}
+
+function populate_table ()
+{
+   xmlhttp.open("GET", "http://localhost/return_json_example.pgasp", true);
+   xmlhttp.send();
+}
+
+function pgasp_json_function (response)
+{
+   var r = JSON.parse(response);
+   var i;
+   var tbody_html = "";
+
+   for (i = 0; i < r.length; i++)
+   {
+      tbody_html += "<tr><td>" + r[i].ID +
+                    "</td><td>" + r[i].firstName +
+                    "</td><td>" + r[i].lastName +
+                    "</td></tr>";
+   }
+
+   document.getElementById("tbody1").innerHTML = tbody_html;
+}
+
+</script>
+
+</body>
+</html>

@@ -14,11 +14,16 @@
  * 2014-12-30 Started
  * 2015-01-03 Added classic style print tag <%= %> along with new style <= =>
  * 2015-01-04 Added checks for consecutive tags
- * 2015-01-09 Added comments section in the beginning of .pgasp
+ * 2015-01-09 .pgasp format now allows a comments section in the beginning of the file
  *
  * TODO: PHP wrapper generation
  * TODO: different variables declaration section (for parsing GET/POST) when generated for use with mod_pgasp
  * TODO: Error handling
+ *
+ * TOTHINK: Return a record instead of just text, i.e. (mime, body) or maybe (headers, body)
+ *          ("text/html", "<!DOCTYPE html><html> ... </html>")
+ *          ("application/json", "{ ... }")
+ *          ("image/svg+xml", "<svg version='1.1'> ... </svg>")
  *
  */
 
@@ -50,8 +55,10 @@ int main(int argc, char * argv[])
       i = 0;
       while (line_input[i])
       {
+         /* removing new-line characters */
          if (line_input[i] == 0x0d || line_input[i] == 0x0a)
          {
+            /* adding extra end-of-string zeroes to avoid out-of-bound comparisons */
             line_input[i] = line_input[i+1] = line_input[i+2] = line_input[i+3] = 0x00;
          }
 

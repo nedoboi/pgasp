@@ -1,0 +1,37 @@
+#
+# Simple PGASP example - return all records from table "people" as JSON
+# Author: "Alex Nedoboi" <my seven-letter surname at gmail>
+#
+# See pgasp.org for documentation
+# See github.com/nedoboi for PGASP Compiler, mod_pgasp, and more examples
+#
+# Requires: create table people as (id integer, first_name vachar, last_name varchar)
+#
+# 2014-01-14 Started
+#
+
+return_json_example
+<!
+
+   r record;
+
+!>[
+<%
+
+   for r in (select p.*, row_number() over() as rownum from people p order by first_name, last_name, id)
+   loop
+
+      if r.rownum > 1 then %>,<% end if;
+
+%>
+{
+   "ID": "<= r.id =>",
+   "firstName": "<= r.first_name =>",
+   "lastName": "<= r.last_name  =>"
+}
+<%
+
+   end loop;
+
+%>
+]

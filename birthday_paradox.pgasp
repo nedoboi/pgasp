@@ -1,0 +1,42 @@
+birthday_paradox
+param_people integer default 30
+
+<!
+
+   current_probability numeric(10,8) := 1.0;
+
+!>
+<html>
+<head>
+<title>Birthday Paradox Example</title>
+<style>
+tr.pink { background-color: pink; }
+</style>
+</head>
+
+<body>
+<table>
+<tr>
+   <th>Number of people<br>in the group</th>
+   <th>Probability of<br>the same birthday</th>
+</tr>
+<%
+
+   for i in 2 .. param_people
+   loop
+
+      current_probability := current_probability * (366-i) / 365;
+
+%>
+<tr <% if i = 23 then %>class=pink<% end if; %> >
+   <td><= i =></td>
+   <td><= to_char( (1-current_probability) * 100, '990.00') => % </td>
+</tr>
+<%
+
+   end loop;
+
+%>
+</table>
+</body>
+</html>
