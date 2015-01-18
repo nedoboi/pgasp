@@ -1,23 +1,25 @@
 #
-# Simple PGASP example - list all records from table "people"
-# Author: "Alex Nedoboi" <my sever-letter surname at gmail>
+# Simple PGASP example - list records from table "people"
+# Author: "Alex Nedoboi" <my seven-letter surname at gmail>
 #
 # See pgasp.org for documentation
 # See github.com/nedoboi for PGASP Compiler, mod_pgasp, and more examples
 #
 # Requires: create table people as (id integer, first_name vachar, last_name varchar)
 #
+# Usage: browse_people.pgasp or browse_people.pgasp?p_id=x where x = people.id
+#
 # 2014-12-30 Started
 # 2015-01-02 Added a little bit of styling
 # 2015-01-09 Added (this very) description as .pgasp format now allows for comments
+# 2015-01-18 Added p_id to filter by person id
 #
 # TODO: Add another section using <div>'s along with the existing section that uses old-school <table>
 # TODO: Move CSS to a .css file, add CSS for <div>'s
-# TODO: When mod_pgasp passes GET/POST, add parameter for filtering by id and/or name
-# TODO: When mod_pgasp passes GET/POST, extend this example with some CRUD, or leave as is and write new example
 #
 
 browse_people
+p_id integer 0
 <!
 
    r record;
@@ -42,7 +44,7 @@ th, td { padding: 10px; }
 </tr>
 <%
 
-   for r in (select * from people order by first_name, last_name, id)
+   for r in (select * from people p where (p_id = 0 or p.id = p_id) order by first_name, last_name, id)
    loop
 
 %>

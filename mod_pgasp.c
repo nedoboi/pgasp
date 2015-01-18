@@ -19,9 +19,10 @@
  * 2015-01-07 Added clean_up_connection()
  * 2015-01-08 Added spit_pg_error()
  * 2015-01-09 Reading connection string from .conf now
+ * 2015-01-17 Now passing GET to PL/pgSQL function as text parameter
  *
- * TODO: Pass GET/POST to the PL/pgSQL function
- * TODO: Write helper PL/pgSQL functions to parse GET/POST
+ * TODO: Pass POST to the PL/pgSQL function
+ * TODO: Write helper PL/pgSQL functions to parse POST
  * TODO: Think of pgaspAllowedPage and pgaspAllowedFunction in .conf (instead of just pgaspAllowed)
  *
  */
@@ -93,12 +94,19 @@ static int clean_up_connection ()
 
 static int pgasp_handler (request_rec * r)
 {
-   apr_table_t * GET;
-   apr_array_header_t * POST;
+   //apr_table_t * GET;
+   //apr_array_header_t * POST;
    int i, j, allowed_to_serve;
    int field_count, tuple_count;
    char * requested_file;
    char cursor_string[256];
+
+   /* PQexecParams doesn't seem to like zero-length strings, so we feed it a dummy */
+   const char * dummy_get = "nothing";
+
+   const char * cursor_values[1] = { r -> args ? r -> args : dummy_get };
+   int cursor_value_lengths[1] = { strlen(r -> args ? r -> args : dummy_get) };
+   int cursor_value_formats[1] = { 0 };
 
    if (!r -> handler || strcmp (r -> handler, "pgasp-handler") ) return DECLINED;
    if (!config.is_enabled) return OK; /* pretending we have responded, may return DECLINED in the future */
@@ -159,9 +167,10 @@ static int pgasp_handler (request_rec * r)
    PQclear (pgr);
 
    /* removing ".pgasp" from file name, and adding "f_" for function name, i.e. foo.pgasp becomes f_foo() */
-   sprintf(cursor_string, "declare c cursor for select f_%.*s() as f", (int) strlen(requested_file)-6, requested_file);
+   sprintf(cursor_string, "declare c cursor for select f_%.*s($1::varchar) as f", (int) strlen(requested_file)-6, requested_file);
 
-   pgr = PQexec (pgc, cursor_string);
+   /* passing GET as first (and only) parameter */
+   pgr = PQexecParams (pgc, cursor_string, 1, NULL, cursor_values, cursor_value_lengths, cursor_value_formats, 0);
    if (PQresultStatus(pgr) != PGRES_COMMAND_OK)
    {
       spit_pg_error ("declare cursor");

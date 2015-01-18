@@ -15,6 +15,10 @@
  * 2015-01-03 Added classic style print tag <%= %> along with new style <= =>
  * 2015-01-04 Added checks for consecutive tags
  * 2015-01-09 .pgasp format now allows a comments section in the beginning of the file
+ * 2015-01-14 Added in_declare, in_header
+ * 2015-01-14 Printing extra single quote if not in code/equals/declare
+ * 2015-01-17 Now getting _pgasp_get_ from Apache mod_pgasp
+ * 2015-01-18 Added in_params
  *
  * TODO: PHP wrapper generation
  * TODO: different variables declaration section (for parsing GET/POST) when generated for use with mod_pgasp
@@ -24,6 +28,7 @@
  *          ("text/html", "<!DOCTYPE html><html> ... </html>")
  *          ("application/json", "{ ... }")
  *          ("image/svg+xml", "<svg version='1.1'> ... </svg>")
+ * TOTHINK: Do we really need in_declare in_header in_params? Perhaps can be simplified?
  *
  */
 
@@ -37,11 +42,12 @@
 
 #define MAX_INPUT_CHARS 4090
 
-int       in_code = false, in_equals = false, in_comment = false, tag_processed = false, is_first_line = true;
+int       in_code = false, in_equals = false, in_comment = false, in_declare = false, in_header = true, in_params = false;
+int       tag_processed = false, is_first_line = true;
 FILE *    f;
 char      line_input [MAX_INPUT_CHARS + 4];
 char *    line_trimmed;
-int       i;
+int       i, j;
 
 int main(int argc, char * argv[])
 {
@@ -75,24 +81,52 @@ int main(int argc, char * argv[])
 
       if (is_first_line)
       {
-         printf("create or replace function f_%s (", line_trimmed);
+         printf("create or replace function f_%s (_pgasp_GET_ varchar", line_trimmed);
+         printf(")\nreturns text as $$\ndeclare\n_pgasp_ text;");
+
          is_first_line = false;
+         in_params = true;
       }
       else
       {
          /* variables declaration tag <! !> */
          if (line_trimmed[0] == '<' && line_trimmed[1] == '!')
          {
-            printf(")\nreturns text as $$\ndeclare\n_pgasp_ text;");
+            in_header = false; /* as soon as we reach the declare section, the header section stops */
+            in_params = false;
+            in_declare = true;
             line_trimmed += 2;
          }
 
          if (line_trimmed[0] == '!' && line_trimmed[1] == '>')
          {
+            in_declare = false;
             printf("begin\n_pgasp_ := \'");
             line_trimmed += 2;
          }
 
+         /* processing parameters in HTTP GET passed by mod_apache */
+         if (in_params)
+         {
+            i = 0;
+
+            /* finding first and second white spaces */
+            while (line_trimmed[i] != ' ' && line_trimmed[i] != '\t') i++;
+            j = i;
+            while (line_trimmed[i] == ' ' || line_trimmed[i] == '\t') i++;
+            while (line_trimmed[i] != ' ' && line_trimmed[i] != '\t') i++;
+            while (line_trimmed[i] == ' ' || line_trimmed[i] == '\t') i++;
+
+            /* Input  : parameter type default
+               Parsed : parameter [j] type [i] default
+               Output : parameter type := pgasp_parse_get(_pgasp_GET_, 'parameter', 'default'); */
+
+            printf("%.*s:= pgasp_parse_get(_pgasp_GET_, \'%.*s\', \'%s\');\n", i, line_trimmed, j, line_trimmed, line_trimmed+i);
+
+            continue;
+         }
+
+         /* function name, passed parameters, and declared variables - done, now processing the rest */
          i = 0;
          while (line_trimmed[i])
          {
@@ -160,7 +194,10 @@ int main(int argc, char * argv[])
             }
             while (tag_processed);
 
-            printf("%c", line_trimmed[i]);
+            if (!in_code && !in_equals && !in_declare && !in_header && line_trimmed[i] == '\'') printf("%c", line_trimmed[i]);
+
+            if (line_trimmed[i]) printf("%c", line_trimmed[i]);
+
             i++;
 
          } /* regular line */

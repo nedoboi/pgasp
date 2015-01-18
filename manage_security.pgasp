@@ -1,0 +1,255 @@
+#
+# Manage Security - PGASP CRUD example
+# Author: "Alex Nedoboi" <my seven-letter surname at gmail>
+#
+# Written as a single page in vanilla HTML and bare minimum of css and js
+# Feel free to pretty up and/or add jQuery or Angular, see JSON example
+#
+# See pgasp.org for documentation
+# See github.com/nedoboi for PGASP Compiler, mod_pgasp, and more examples
+#
+# Requires: create_sample_pgasp_schema.sql
+#
+# 2015-01-07 Started
+# 2015-01-12 Converted from PHP wrapper format to mod_pgasp format
+# 2015-01-14 Minimised formatting
+#
+# TODO: nothing
+#
+
+manage_security
+p_group integer 1
+p_right integer 0
+p_member integer 0
+submit_action varchar ~
+<!
+
+   i record;
+   cu integer := 20; /* current user Jean Cook CEO */
+
+!><%
+
+   if has_security_right (100, cu) = 0 then
+
+      return '<h1>Your login is inactive, access denied</h1>';
+
+   end if;
+
+   if has_security_right (200, cu) = 0 then
+
+      return '<h1>You have no rights to manage security access</h1>';
+
+   end if;
+
+   if submit_action = 'add-right' and p_right > 0 then
+
+      insert into user_group_rights
+      select nextval('seq_shared'), p_group, p_right
+      where not exists
+      (
+         select 1 from user_group_rights r
+         where r.group_id = p_group
+         and r.right_id = p_right
+      );
+
+   end if;
+
+   if submit_action = 'add-member' and p_member > 0 then
+
+      insert into user_group_members
+      select nextval('seq_shared'), p_group, p_member
+      where not exists
+      (
+         select 1 from user_group_members m
+         where m.group_id = p_group
+         and m.person_id = p_member
+      );
+
+   end if;
+
+   if submit_action = 'del-right' and p_right > 0 then
+
+      delete from user_group_rights r
+      where r.group_id = p_group
+      and r.right_id = p_right
+      ;
+
+   end if;
+
+   if submit_action = 'del-member' and p_member > 0 then
+
+      delete from user_group_members m
+      where m.group_id = p_group
+      and m.person_id = p_member
+      ;
+
+   end if;
+
+%><html>
+<head>
+<title>Manage Security</title>
+<style>
+body { font-family: Arial; font-size: 12pt; }
+table { background-color: #3366ff; border: 0px; border-spacing: 0px 1px; }
+th { background-color: #dfefff; }
+td { background-color: white; }
+th, td { padding: 10px; }
+.centered { text-align: center; }
+.left { text-align: left; }
+.right { text-align: right; }
+.lookup { background-color: #3366ff; color: white; padding: 1%; }
+.addnew { background-color: #ffff80; }
+.lists { width: 45%; float: left; padding: 2%; }
+</style>
+<script>
+
+function f_delete_right(x)
+{
+   if (confirm("Are you sure you want to delete this right?"))
+   {
+      f1.submit_action.value = "del-right";
+      f1.p_right.value = x;
+      f1.submit();
+   }
+}
+
+function f_delete_member(x)
+{
+   if (confirm("Are you sure you want to delete this member?"))
+   {
+      f1.submit_action.value = "del-member";
+      f1.p_member.value = x;
+      f1.submit();
+   }
+}
+
+</script>
+</head>
+<body>
+
+<div class="lookup centered">
+User group : <= list_lookup_table('p_group', 'lut_user_groups', p_group, 1, 'Please select',
+                                  p_html := 'onchange="f1.p_group.value = this.value; f1.submit();"') =>
+</div>
+
+<div class="lists centered">
+<table width="100%">
+<tr>
+   <th>Group members</th>
+   <th class="right">
+      <button onclick="tr_ga.style.display = (tr_ga.style.display == 'none') ? '' : 'none';"> + </button>
+   </th>
+</tr>
+<tr id="tr_ga" class="addnew" style="display: none;">
+   <td class="addnew">New member :
+      <select name="p_member" onchange="f1.p_member.value = this.value;"><option value="0">Please select<%
+
+         for i in
+         (
+            select * from people t
+            where t.id not in
+            (
+               select person_id
+               from user_group_members m
+               where m.group_id = p_group
+            )
+            order by first_name, last_name
+         )
+         loop
+
+            %><option value="<= i.id =>"><= i.first_name => <= i.last_name =></option><%
+
+         end loop;
+
+      %></select>
+   </td>
+   <td class="addnew right"><button onclick="f1.submit_action.value='add-member'; f1.submit();">Add</button></td>
+</tr>
+<%
+
+   for i in
+   (
+      select p.id, p.first_name || ' ' || last_name as name
+      from people p, user_group_members m
+      where m.group_id = p_group
+      and m.person_id = p.id
+      order by 1
+   )
+   loop
+
+      %><tr>
+           <td><= i.name =></td>
+           <td class="right"><button onclick="f_delete_member(<= i.id =>);"> &ndash; </button></td>
+      </tr><%
+
+   end loop;
+
+%>
+</table>
+</div>
+
+<div class="lists centered">
+<table width="100%">
+<tr>
+   <th>Group rights</th>
+   <th class="right">
+      <button onclick="tr_ma.style.display = (tr_ma.style.display == 'none') ? '' : 'none';"> + </button>
+   </th>
+</tr>
+<tr id="tr_ma" class="addnew" style="display: none;">
+   <td class="addnew">New right :
+      <select name="p_right" onchange="f1.p_right.value = this.value;"><option value="0">Please select<%
+
+         for i in
+         (
+            select * from lut_security_rights t
+            where t.id not in
+            (
+               select right_id
+               from user_group_rights r
+               where r.group_id = p_group
+            )
+            order by name
+         )
+         loop
+
+            %><option value="<= i.id =>"><= i.name =></option><%
+
+         end loop;
+
+      %></select>
+   </td>
+   <td class="addnew right"><button onclick="f1.submit_action.value = 'add-right'; f1.submit();">Add</button></td>
+</tr>
+<%
+
+   for i in
+   (
+      select Lr.id, Lr.name
+      from lut_security_rights Lr, user_group_rights r
+      where r.group_id = p_group
+      and r.right_id = Lr.id
+      order by 1
+   )
+   loop
+
+      %><tr>
+           <td><= i.name =></td>
+           <td class="right"><button onclick="f_delete_right(<= i.id =>);"> &ndash; </button></td>
+      </tr><%
+
+   end loop;
+
+%>
+</table>
+</div>
+
+<form name="f1" method="get">
+<input type=hidden name="p_group" value="<= p_group =>">
+<input type=hidden name="p_right" value="0">
+<input type=hidden name="p_member" value="0">
+<input type=hidden name="submit_action" value="~">
+</form>
+
+</body>
+</html>
