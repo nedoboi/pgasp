@@ -3,14 +3,14 @@ pgasp
 
 Adaptive Server Pages for Postgres
 
-mod_pgasp.c - Apache module, connects directly to Postgres bypassing PHP/Perl/Python
-pgaspc.c - PGASP Compiler, creates Postgres function from .pgasp file
-create_sample_PGASP_CRUD.sql - Creates sample schema used in CRUD and other examples
-birthday_paradox.pgasp - Example without data access, just simple calculations
-browse_people.pgasp - Example with data access, lists database table
-return_json_example.* - Static .html file gets JSON from .pgasp and renders as table
-manage_security.pgasp - CRUD (create, retrieve, update, delete) example
-return_google_charts.pgasp - Google Charts example, shows pie, bar, and org charts
+1. mod_pgasp.c - Apache module, connects directly to Postgres bypassing PHP/Perl/Python
+2. pgaspc.c - PGASP Compiler, creates Postgres function from .pgasp file
+3. create_sample_PGASP_CRUD.sql - Creates sample schema used in CRUD and other examples
+4. birthday_paradox.pgasp - Example without data access, just simple calculations
+5. browse_people.pgasp - Example with data access, lists database table
+6. return_json_example.* - Static .html file gets JSON from .pgasp and renders as table
+7. manage_security.pgasp - CRUD (create, retrieve, update, delete) example
+8. return_google_charts.pgasp - Google Charts example, shows pie, bar, and org charts
 
 How this works
 ==============
@@ -35,6 +35,8 @@ Go to http://pgasp.org for more information
 .pgasp file format
 ==================
 
+
+```html
 #
 # comments here
 #
@@ -68,6 +70,5 @@ Yet more PL/pgSQL code here
 
 %>
 </html> or ] or </xml> or </svg> or whatever
-
-
+```
 
