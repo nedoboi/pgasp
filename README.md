@@ -36,7 +36,7 @@ Go to http://pgasp.org for more information
 ==================
 
 
-```html
+```
 #
 # comments here
 #
@@ -53,21 +53,15 @@ local_variable type default default_value;
 
 !>
 <%
-
 PL/pgSQL code here
-
 %>
 <html> or [ (for JSON) or <xml> or <svg> or whatever
 <%
-
 Some more PL/pgSQL code here
-
 %>
 <= PL/pgSQL variable here =>
 <%
-
 Yet more PL/pgSQL code here
-
 %>
 </html> or ] or </xml> or </svg> or whatever
 ```
