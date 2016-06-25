@@ -1,0 +1,6 @@
+pgaspc
+*.la
+*~
+*.lo
+*.slo
+.libs
