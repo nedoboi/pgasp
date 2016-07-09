@@ -18,7 +18,7 @@ return_json_example
 !>[
 <%
 
-   for r in (select p.*, row_number() over() as rownum from people p order by first_name, last_name, id)
+   for r in (select p.*, row_number() over(order by first_name, last_name, id) as rownum from people p order by first_name, last_name, id)
    loop
 
       if r.rownum > 1 then %>,<% end if;

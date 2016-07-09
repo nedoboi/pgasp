@@ -1,5 +1,5 @@
 birthday_paradox
-param_people integer default 30
+param_people integer 30
 
 <!
 

@@ -10,38 +10,38 @@
  *
  */
 --
-drop table people;
+drop table if exists people;
 create table people (id integer primary key, first_name varchar, last_name varchar);
 insert into people values (10, 'John', 'Smith');
 insert into people values (20, 'Jean', 'Cook');
 insert into people values (30, 'Dan', 'Webb');
 insert into people values (40, 'Bill', 'Williams');
 --
-drop table companies;
+drop table if exists companies;
 create table companies (id integer primary key, trading_name varchar, registered_name varchar);
 insert into companies values (1, 'We R Dummy Shop', 'Dummy Company Pty Ltd');
 --
-drop table lut_positions; /* LUT = look-up tables, first column is always ID, second is always name, with scope to add notes/extras/etc later on */
+drop table if exists lut_positions; /* LUT = look-up tables, first column is always ID, second is always name, with scope to add notes/extras/etc later on */
 create table lut_positions (id integer primary key, name varchar);
 insert into lut_positions values (11, 'CEO');
 insert into lut_positions values (22, 'Sales');
 insert into lut_positions values (33, 'DevOps');
 --
-drop table employees;
+drop table if exists employees;
 create table employees (id integer primary key, company_id integer, person_id integer, position_id integer, reports_to_person_id integer);
 insert into employees values (1, 1, 20, 11, 0);
 insert into employees values (2, 1, 30, 33, 20);
 insert into employees values (3, 1, 10, 22, 20);
 insert into employees values (4, 1, 40, 22, 10);
 --
-drop table lut_user_groups;
+drop table if exists lut_user_groups;
 create table lut_user_groups (id integer primary key, name varchar);
 insert into lut_user_groups values (1, 'Management');
 insert into lut_user_groups values (2, 'Infrastructure');
 insert into lut_user_groups values (50, 'Human Resources');
 insert into lut_user_groups values (888, 'Current users');
 --
-drop table user_group_members;
+drop table if exists user_group_members;
 create table user_group_members (id integer primary key, group_id integer, person_id integer);
 insert into user_group_members values (1, 1, 20);
 insert into user_group_members values (2, 50, 20);
@@ -51,7 +51,7 @@ insert into user_group_members values (5, 888, 20);
 insert into user_group_members values (6, 888, 30);
 insert into user_group_members values (7, 888, 40);
 --
-drop table lut_security_rights;
+drop table if exists lut_security_rights;
 create table lut_security_rights (id integer primary key, name varchar);
 insert into lut_security_rights values (100, 'Log into system');
 insert into lut_security_rights values (200, 'Manage security access');
@@ -60,7 +60,7 @@ insert into lut_security_rights values (302, 'See bar chart');
 insert into lut_security_rights values (303, 'See pie chart');
 insert into lut_security_rights values (404, 'Access web server logs');
 --
-drop table user_group_rights;
+drop table if exists user_group_rights;
 create table user_group_rights (id integer primary key, group_id integer, right_id integer);
 insert into user_group_rights values (1, 50, 200);
 insert into user_group_rights values (2, 888, 100);
@@ -68,6 +68,9 @@ insert into user_group_rights values (3, 50, 301);
 insert into user_group_rights values (4, 1, 302);
 insert into user_group_rights values (5, 1, 303);
 insert into user_group_rights values (6, 2, 404);
+--
+drop sequence if exists seq_shared;
+create sequence seq_shared start 1000;
 --
 create or replace function has_security_right (p_right integer, p_person integer)
 returns integer as
